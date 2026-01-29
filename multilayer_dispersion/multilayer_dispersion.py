@@ -200,7 +200,7 @@ class MagneticTensor: # calcualte all tensors such that hi = -Nij mj.
         
         # try_f("ex", N_ex, 0)
         
-        D_ex = self.matrix(N_ex)
+        D_ex = self.matrix(N_bqex)
         return D_ex
     
     def D_u(self, k):
