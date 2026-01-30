@@ -164,6 +164,9 @@ class MagneticTensor: # calcualte all tensors such that hi = -Nij mj.
                 N_ex =  2*Aex[nu]/(μ0*Ms[eta]**2)*k2*kr[nu,eta] - (J[nu,eta])/(μ0*Ms[eta]*Ms[nu]*d) *(kr[nu+1,eta]+kr[nu,eta+1])* (cos(th[nu])*cos(th[eta])*cos(phi[nu]-phi[eta])+sin(th[nu])*sin(th[eta]))
             return Ms[nu]*N_ex 
         
+        D_ex = self.matrix(N_ex)
+        return D_ex
+        
     def D_bqex(self, k):
         d=self.d
         kr = self.kr
@@ -200,8 +203,8 @@ class MagneticTensor: # calcualte all tensors such that hi = -Nij mj.
         
         # try_f("ex", N_ex, 0)
         
-        D_ex = self.matrix(N_bqex)
-        return D_ex
+        D_bqex = self.matrix(N_bqex)
+        return D_bqex
     
     def D_u(self, k):
         d=self.d
@@ -317,7 +320,7 @@ class Dispersion:  # class to calculate the magnetic interactions
         Nmag = self.Nmag
 
         scale_factor = -1j*mag_parmts.gamma(0) * μ0
-        D_tot = scale_factor*(Nmag.D_dip(k) + Nmag.D_ex(k) + Nmag.D_bdmi(k) + Nmag.D_Heq(Hext, th_H0, phi_H0))
+        D_tot = scale_factor*(Nmag.D_dip(k) + Nmag.D_ex(k) + Nmag.D_bdmi(k) + Nmag.D_bqex(k) + Nmag.D_Heq(Hext, th_H0, phi_H0))
             
         w, v = linalg.eig(D_tot)
 
@@ -414,7 +417,7 @@ class Graphs:  # class to calculate the magnetic interactions
         
         for w_vals in w_list_vals: # plots frequencies form a list of w_vals arrays
             for mode in modes:
-                plt.plot(x_vals, w_vals[:, mode] , label = f"mode {mode} ({legends_list[legend_counter]})" if legends_list else f"mode {mode}")
+                plt.plot(x_vals, w_vals[:, mode] , 'o', label = f"mode {mode} ({legends_list[legend_counter]})" if legends_list else f"mode {mode}")
             if v_k_mode:
                 v_k, v_mode = v_k_mode
                 k_index = argmin(abs(x_vals - v_k))
