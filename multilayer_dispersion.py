@@ -2,6 +2,7 @@
 import numpy as np
 from numpy import pi
 μ0 = 4*pi *1e-7  # Permeability of free space (H/m or T·m/A)
+from numpy import abs, sin, cos, sinh, exp, sign
 
 class MagneticFilm:
     def __init__(self, number_of_layers, total_thickness):
@@ -24,6 +25,7 @@ class MagneticFilm:
             self.outer = outer
             N = self.outer.number_of_layers
             d = self.outer.layer_thickness
+            kr = self.np.eye(self.N+1)
             self.define_funct("th_u", lambda eta: 0) # anisotropy angle theta
             self.define_funct("phi_u", lambda eta: 0) # anisotropy angle phi
             self.define_funct("Ku", lambda eta: 0) # anisotropy constant
@@ -66,12 +68,41 @@ class MagneticFilm:
             summary = {key: value for key, value in params.items() if key.endswith('_array')}
             return summary
         
-        
+        def eq_condition(self, H0, th0, phi0):
+            # th = [th0, th1, ...] is an array of variables to obtain
+            # same as phi = [phi0, phi1, ...]
+
+            # Zeeman
+            def H_ext(self, H0, th0, phi0, th, phi):
+                HX = H0 *( sin(th[nu])*sin(phi[nu]-phi0) )
+                HY = H0 *( sin(th[nu])*sin(th0) - cos(th[nu])*cos(th0)*cos(phi[nu]-phi0) )
+                return HX, HY
+            
+            # Dipolar
+            def H_dip(self, nu, th):
+                Ms = self.Ms_array
+                HY = - Ms[nu]*cos(th[nu])*sin(th[nu])
+                HX = 0
+                return HX, HY
+            
+            # Exchange
+            def H_ex(self, nu, th, phi):
+                J = self.J_array
+                Ms = self.Ms_array
+                d = self.outer.layer_thickness
+                N = self.outer.number_of_layers
+                kr = self.kr
+
+                HX = -sum(J[nu,p]/(μ0*Ms[ nu]*d) * (kr[nu+1,p]+kr[nu,p+1]) * sin(th[nu])*sin(phi[nu]-phi[p]) for p in range(N))
+                HY = sum(J[nu,p]/(μ0*Ms[ nu]*d) * (kr[nu+1,p]+kr[nu,p+1]) * ( sin(th[nu])*cos(th[p]) - cos(phi[nu]-phi[p])*cos(th[nu]*sin(th[p])) ) for p in range(N))
+                return HX, HY
+            
+            def Heq(vars):
+                
+            
 
 
 # defines the magnetic tensor and calculates the dynamic matrix considering all magnetic interactions
-from numpy import abs, sin, cos, sinh, exp, sign
-
 class MagneticTensor: # calcualte all tensors such that hi = -Nij mj. 
     def __init__(self, film): 
 
